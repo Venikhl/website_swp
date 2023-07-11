@@ -1,5 +1,5 @@
 <template>
-  <header>
+  <header v-if="!hideHeader">
     <div class="wrap-logo">
         <img src="./icons/innopolis_logo.png" alt="Innopolis Logo">
     </div>
@@ -14,9 +14,20 @@
 
 <script>
 export default {
+  data() {
+    return {
+      hideHeader: false // Флаг для скрытия заголовка
+    };
+  },
   methods: {
     selectItem(item) {
       this.$emit('item-selected', item);
+      // Проверяем выбранный элемент и скрываем заголовок при выборе "login_page"
+      if (item === 'login_page') {
+        this.hideHeader = true;
+      } else {
+        this.hideHeader = false;
+      }
     }
   }
 };
