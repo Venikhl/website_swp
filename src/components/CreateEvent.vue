@@ -1,65 +1,286 @@
+<!-- <template>
+  <div id="event-page-container">
+    <h1 class="event-page-heading">&bull; Create Event &bull;</h1>
+    <div class="event-page-underline"></div>
+    <form action="#" method="post" class="event-page-form" id="contact_form">
+      <div class="event-page-full-space">
+        <label for="title"></label>
+        <input type="text" placeholder="Title of the event" name="title" id="title_input" required />
+      </div>
+      <div class="event-page-lecture-type">
+        <label for="lecture type"></label>
+        <input type="text" placeholder="Lecture type" name="lecture type" id="type_input" required />
+      </div>
+      <div class="event-page-name">
+        <label for="professor name"></label>
+        <input type="text" placeholder="Professor name" name="professor name" id="name_input" required />
+      </div>
+      <div class="event-page-auditorium">
+        <label for="auditorium"></label>
+        <input type="number" placeholder="Auditorium" name="auditorium" id="auditorium_input" required />
+      </div>
+      <div class="event-page-date-time">
+        <div class="event-page-date">
+          <label for="date"></label>
+          <input type="date" name="date" id="date_input" required />
+        </div>
+        <div class="event-page-time">
+          <label for="time"></label>
+          <input type="time" name="time" id="time_input" required />
+        </div>
+      </div>
+      <div class="event-page-year">
+        <label for="year">Select Year:</label>
+        <div class="select-container">
+          <select
+            name="year"
+            id="year_input"
+            required
+            v-model="selectedYear"
+            @change="fetchGroups"
+          >
+            <option disabled hidden value="">Choose year</option>
+            <option v-for="year in years" :value="year.id" :key="year.id">{{ year.name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="event-page-subject">
+        <label for="subject">Select Group:</label>
+        <div class="select-container">
+          <select
+            placeholder="Choose group"
+            name="subject"
+            id="subject_input"
+            required
+            v-model="selectedGroup"
+          >
+            <option disabled hidden value="">Choose group</option>
+            <option v-for="group in groups" :value="group" :key="group">{{ group }}</option>
+          </select>
+        </div>
+        <div class="selected-groups">
+          <p>{{ selectedGroups.join(', ') }}</p>
+        </div>
+      </div>
+      <button type="button-select" @click="addSelectedGroup" :disabled="!selectedGroup">Add Group</button>
+      <button type="button-clear" @click="clearSelectedGroups">Clear Selection</button>
+      <div class="event-page-submit">
+        <input type="submit" value="Create event" id="form_button" />
+      </div>
+    </form>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      years: [],
+      selectedYear: null,
+      groups: [],
+      selectedGroup: '',
+      selectedGroups: []
+    };
+  },
+  created() {
+    this.fetchYears();
+  },
+  methods: {
+    async fetchYears() {
+      try {
+        const response = await fetch('https://innoschedule-api.onrender.com/admin/years');
+        const data = await response.json();
+        this.years = data;
+      } catch (error) {
+        console.error('Error fetching years:', error);
+      }
+    },
+    async fetchGroups() {
+      try {
+        if (this.selectedYear) {
+          const response = await fetch(`https://innoschedule-api.onrender.com/admin/groups/${this.selectedYear}`);
+          const data = await response.json();
+          this.groups = data.map(group => group.name);
+          this.selectedGroup = '';
+          this.selectedGroups = [];
+        }
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      }
+    },
+    addSelectedGroup() {
+      if (this.selectedGroup && !this.selectedGroups.includes(this.selectedGroup)) {
+        this.selectedGroups.push(this.selectedGroup);
+        this.selectedGroup = '';
+      }
+    },
+    clearSelectedGroups() {
+      this.selectedYear = null;
+      this.selectedGroups = [];
+    }
+  }
+};
+</script> -->
 <template>
-    <div id="event-page-container">
-      <h1 class="event-page-heading">&bull; Create Event &bull;</h1>
-      <div class="event-page-underline"></div>
-      <form action="#" method="post" class="event-page-form" id="contact_form">
-        <div class="event-page-full-space">
-          <label for="title"></label>
-          <input type="text" placeholder="Title of the event" name="title" id="title_input" required />
+  <div id="event-page-container">
+    <h1 class="event-page-heading">&bull; Create Event &bull;</h1>
+    <div class="event-page-underline"></div>
+    <form action="#" method="post" class="event-page-form" id="contact_form" @submit="createEvent">
+      <div class="event-page-full-space">
+        <input type="text" placeholder="Title of the event" name="title" id="title_input" required ref="titleInput" />
+      </div>
+      <div class="event-page-lecture-type">
+        <input type="text" placeholder="Lecture type" name="lecture-type" id="type_input" required ref="lectureTypeInput" />
+      </div>
+      <div class="event-page-name">
+        <input type="text" placeholder="Professor name" name="professor-name" id="name_input" required ref="professorNameInput" />
+      </div>
+      <div class="event-page-auditorium">
+        <input type="number" placeholder="Auditorium" name="auditorium" id="auditorium_input" required ref="auditoriumInput" />
+      </div>
+      <div class="event-page-date-time">
+        <div class="event-page-date">
+          <input type="date" name="date" id="date_input" required ref="dateInput" />
         </div>
-        <div class="event-page-lecture-type">
-          <label for="lecture type"></label>
-          <input type="text" placeholder="Lecture type" name="lecture type" id="type_input" required />
+        <div class="event-page-time">
+          <input type="time" name="time" id="time_input" required ref="timeInput" />
         </div>
-        <div class="event-page-name">
-          <label for="professor name"></label>
-          <input type="text" placeholder="Professor name" name="professor name" id="name_input" required />
+      </div>
+      <div class="event-page-year">
+        <label for="year">Select Year:</label>
+        <div class="select-container">
+          <select
+            placeholder="Choose year"
+            name="year"
+            id="year_input"
+            required
+            v-model="selectedYear"
+            @change="fetchGroups"
+          >
+            <option disabled hidden value="">Choose year</option>
+            <option v-for="year in years" :value="year.id" :key="year.id">{{ year.name }}</option>
+          </select>
         </div>
-        <div class="event-page-auditorium">
-          <label for="auditorium"></label>
-          <input type="number" placeholder="Auditorium" name="auditorium" id="auditorium_input" required />
+      </div>
+      <div class="event-page-subject">
+        <label for="subject">Select Group:</label>
+        <div class="select-container">
+          <select
+            placeholder="Choose group"
+            name="subject"
+            id="subject_input"
+            required
+            v-model="selectedGroup"
+          >
+            <option disabled hidden value="">Choose group</option>
+            <option v-for="group in groups" :value="group" :key="group">{{ group }}</option>
+          </select>
         </div>
-        <div class="event-page-date-time">
-          <div class="event-page-date">
-            <label for="date"></label>
-            <input type="date" name="date" id="date_input" required />
-          </div>
-          <div class="event-page-time">
-            <label for="time"></label>
-            <input type="time" name="time" id="time_input" required />
-          </div>
+        <div class="selected-groups">
+          <p>{{ selectedGroups.join(', ') }}</p>
         </div>
-        <div class="event-page-subject">
-          <label for="subject"></label>
-          <div class="select-container">
-            <select
-              placeholder="Choose group"
-              name="subject"
-              id="subject_input"
-              required
-              v-model="selectedGroup"
-            >
-              <option disabled hidden value="">Choose group</option>
-              <option v-for="group in groups" :value="group" :key="group">{{ group }}</option>
-            </select>
-          </div>
-          <div class="selected-groups">
-            <p>{{ selectedGroups.join(', ') }}</p>
-          </div>
-        </div>
-        <button type="button-select" @click="addSelectedGroup" :disabled="!selectedGroup">Add Group</button>
-        <button type="button-clear" @click="clearSelectedGroups">Clear Selection</button>
-        <div class="event-page-submit">
-          <input type="submit" value="Create event" id="form_button" />
-        </div>
-      </form><!-- // End form -->
-    </div><!-- // End #event-page-container -->
-  </template>
-  
-  
+      </div>
+      <button type="button-select" @click="addSelectedGroup" :disabled="!selectedGroup">Add Group</button>
+      <button type="button-clear" @click="clearSelectedGroups">Clear Selection</button>
+      <div class="event-page-submit">
+        <input type="submit" value="Create event" id="form_button" />
+      </div>
+    </form>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      years: [],
+      selectedYear: '',
+      groups: [],
+      selectedGroup: '',
+      selectedGroups: []
+    };
+  },
+  created() {
+    this.fetchYears();
+    this.selectedYear = '';
+  },
+  methods: {
+    async fetchYears() {
+      try {
+        const response = await fetch('https://innoschedule-api.onrender.com/admin/years');
+        const data = await response.json();
+        this.years = data;
+      } catch (error) {
+        console.error('Error fetching years:', error);
+      }
+    },
+    async fetchGroups() {
+      try {
+        if (this.selectedYear) {
+          const response = await fetch(`https://innoschedule-api.onrender.com/admin/groups/${this.selectedYear}`);
+          const data = await response.json();
+          this.groups = data.map(group => group.name);
+          this.selectedGroup = '';
+          this.selectedGroups = [];
+        }
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      }
+    },
+    addSelectedGroup() {
+      if (this.selectedGroup && !this.selectedGroups.includes(this.selectedGroup)) {
+        this.selectedGroups.push(this.selectedGroup);
+        this.selectedGroup = '';
+      }
+    },
+    clearSelectedGroups() {
+      this.selectedYear = '';
+      this.selectedGroups = [];
+    },
+    async createEvent(event) {
+      event.preventDefault();
+
+      const eventData = {
+        title: this.$refs.titleInput.value,
+        lectureType: this.$refs.lectureTypeInput.value,
+        professorName: this.$refs.professorNameInput.value,
+        auditorium: this.$refs.auditoriumInput.value,
+        date: this.$refs.dateInput.value,
+        time: this.$refs.timeInput.value,
+        year: this.selectedYear,
+        groups: this.selectedGroups
+      };
+
+      try {
+        const response = await fetch('https://innoschedule-api.onrender.com/admin/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(eventData)
+        });
+
+        if (response.ok) {
+          console.log('Event created successfully!');
+          this.$refs.contactForm.reset();
+          this.selectedYear = '';
+          this.selectedGroups = [];
+        } else {
+          console.error('Error creating event:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error creating event:', error);
+      }
+    }
+  }
+};
+</script>
+
   <style>
   @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700');
-  
+  label{
+    color: black;
+  }
   html {
     font-family: 'Montserrat', Arial, sans-serif;
     -ms-text-size-adjust: 100%;
@@ -424,38 +645,3 @@
   
   
   </style>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        groups: [
-          'BS22-CS-01',
-          'BS22-CS-02',
-          'BS22-CS-03',
-          'BS22-CS-04',
-          'BS22-CS-05',
-          'BS22-CS-06',
-          'BS22-DSAI-01',
-          'BS22-DSAI-02',
-          'BS22-DSAI-03',
-          'BS22-DSAI-04'
-        ],
-        selectedGroup: '',
-        selectedGroups: []
-      };
-    },
-    methods: {
-      addSelectedGroup() {
-        if (this.selectedGroup && !this.selectedGroups.includes(this.selectedGroup)) {
-          this.selectedGroups.push(this.selectedGroup);
-          this.selectedGroup = '';
-        }
-      },
-      clearSelectedGroups() {
-        this.selectedGroups = [];
-      }
-    }
-  };
-  </script>
-  
