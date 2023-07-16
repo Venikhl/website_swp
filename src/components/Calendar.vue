@@ -1,16 +1,15 @@
 <template>
   <div class="calendarInfo">
     <FullCalendar :options="calendarOptions" />
-    <!-- Add the popup when an event is clicked -->
-    <EditEventPopup v-if="clickedEvent" :event="clickedEvent" @event-updated="updateEvent" @close-popup="closePopup" />
+    <EditEventPopup v-if="clickedEvent" :event="clickedEvent" @event-updated="handleEventUpdated" @event-deleted="handleEventDeleted" @close-popup="closePopup" />
   </div>
 </template>
 
 <script>
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import axios from 'axios';
 import EditEventPopup from './EditEventPopup.vue';
+import axios from 'axios';
 
 export default {
   components: {
@@ -58,12 +57,18 @@ export default {
       const clickedEventId = info.event.id;
       this.clickedEvent = this.calendarOptions.events.find((event) => event.id == clickedEventId);
     },
-    updateEvent(updatedEvent) {
+    handleEventUpdated(updatedEvent) {
+      // Обновляем событие локально (не отправляя на сервер)
       const index = this.calendarOptions.events.findIndex((event) => event.id == updatedEvent.id);
       if (index !== -1) {
         this.calendarOptions.events.splice(index, 1, updatedEvent);
       }
 
+      this.closePopup();
+    },
+    handleEventDeleted(deletedEventId) {
+      // Удаляем событие локально (не отправляя на сервер)
+      this.calendarOptions.events = this.calendarOptions.events.filter((event) => event.id !== deletedEventId);
       this.closePopup();
     },
     closePopup() {
