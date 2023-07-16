@@ -1,6 +1,8 @@
 <template>
   <div class="calendarInfo">
     <FullCalendar :options="calendarOptions" />
+    <!-- Add the popup when an event is clicked -->
+    <EditEventPopup v-if="clickedEvent" :event="clickedEvent" @close-popup="closePopup" />
   </div>
 </template>
 
@@ -8,10 +10,12 @@
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import axios from 'axios';
+import EditEventPopup from './EditEventPopup.vue';
 
 export default {
   components: {
-    FullCalendar
+    FullCalendar,
+    EditEventPopup,
   },
   props: ['group'],
   data() {
@@ -19,9 +23,12 @@ export default {
       calendarOptions: {
         plugins: [dayGridPlugin],
         initialView: 'dayGridMonth',
-        weekends: true, // Изменено на true
-        events: []
-      }
+        weekends: true,
+        events: [],
+        // Add eventClick handler here
+        eventClick: this.showEditEventPopup,
+      },
+      clickedEvent: null,
     };
   },
   methods: {
@@ -32,23 +39,24 @@ export default {
       try {
         const response = await axios.get(apiUrl);
         const eventData = response.data;
-        print(console.log(eventData))
 
-        const events = eventData.map(event => ({
+        const events = eventData.map((event) => ({
+          id: event.id,
           title: event.title,
           start: new Date(event.date),
-          // extendedProps: {
-          //   recurring: {
-          //     daysOfWeek: [0, 1, 2, 3, 4, 5, 6]
-          //   }
-          // }
         }));
-        // console.log(events)
 
         this.calendarOptions.events = events;
       } catch (error) {
         console.error('Ошибка при получении данных с API:', error);
       }
+    },
+    showEditEventPopup(info) {
+      const clickedEventId = info.event.id;
+      this.clickedEvent = this.calendarOptions.events.find((event) => event.id === clickedEventId);
+    },
+    closePopup() {
+      this.clickedEvent = null;
     },
   },
   watch: {
@@ -56,9 +64,9 @@ export default {
       immediate: true,
       handler(newGroup) {
         this.fetchEvents();
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>
 
@@ -74,11 +82,9 @@ export default {
   background-color: #F9B634 !important;
   border-color: #F9B634 !important;
   color: white;
-  width: 80%;
 }
 
 .fc-event-title {
   color: white;
-  font-size: 16px;
 }
 </style>
