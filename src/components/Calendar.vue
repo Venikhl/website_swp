@@ -2,7 +2,7 @@
   <div class="calendarInfo">
     <FullCalendar :options="calendarOptions" />
     <!-- Add the popup when an event is clicked -->
-    <EditEventPopup v-if="clickedEvent" :event="clickedEvent" @close-popup="closePopup" />
+    <EditEventPopup v-if="clickedEvent" :event="clickedEvent" @event-updated="updateEvent" @close-popup="closePopup" />
   </div>
 </template>
 
@@ -44,16 +44,27 @@ export default {
           id: event.id,
           title: event.title,
           start: new Date(event.date),
+          type: event.type,
+          room: event.room,
+          lecturer: event.lecturer,
         }));
 
         this.calendarOptions.events = events;
       } catch (error) {
-        console.error('Ошибка при получении данных с API:', error);
+        console.error('Error fetching data from API:', error);
       }
     },
     showEditEventPopup(info) {
       const clickedEventId = info.event.id;
-      this.clickedEvent = this.calendarOptions.events.find((event) => event.id === clickedEventId);
+      this.clickedEvent = this.calendarOptions.events.find((event) => event.id == clickedEventId);
+    },
+    updateEvent(updatedEvent) {
+      const index = this.calendarOptions.events.findIndex((event) => event.id == updatedEvent.id);
+      if (index !== -1) {
+        this.calendarOptions.events.splice(index, 1, updatedEvent);
+      }
+
+      this.closePopup();
     },
     closePopup() {
       this.clickedEvent = null;
