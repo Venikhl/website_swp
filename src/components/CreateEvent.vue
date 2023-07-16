@@ -1,4 +1,3 @@
-
 <script>
 export default {
   data() {
@@ -17,11 +16,13 @@ export default {
         time: '',
         year: '',
         groups: []
-      }
+      },
+      lecturers: [] // Add a new array to store the lecturer names
     };
   },
   created() {
     this.fetchYears();
+    this.fetchLecturers(); // Call the method to fetch the lecturer data
     this.selectedYear = '';
   },
   methods: {
@@ -32,6 +33,15 @@ export default {
         this.years = data;
       } catch (error) {
         console.error('Error fetching years:', error);
+      }
+    },
+    async fetchLecturers() {
+      try {
+        const response = await fetch('https://innoschedule-api.onrender.com/admin/lecturers');
+        const data = await response.json();
+        this.lecturers = data.map(lecturer => lecturer.name);
+      } catch (error) {
+        console.error('Error fetching lecturers:', error);
       }
     },
     async fetchGroups() {
@@ -59,12 +69,21 @@ export default {
     },
     async createEvent() {
       try {
-        const response = await fetch('https://innoschedule-api.onrender.com/admin/events', {
+        const eventDataFormated = {
+          title: this.eventData.title,
+          type: this.eventData.lectureType,
+          // room: this.eventData.auditorium,
+          lecturer: this.eventData.professorName,
+          date: `${this.eventData.date}T${this.eventData.time}:00.000Z`,
+          groups: this.selectedGroups
+        }
+        console.log(JSON.stringify(eventDataFormated))
+        const response = await fetch('https://innoschedule-api.onrender.com/admin/event/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(this.eventData)
+          body: JSON.stringify(eventDataFormated)
         });
 
         if (response.ok) {
@@ -97,32 +116,48 @@ export default {
     <div class="event-page-underline"></div>
     <form @submit.prevent="createEvent" class="event-page-form" id="contact_form">
       <div class="event-page-full-space">
-        <input type="text" placeholder="Title of the event" v-model="eventData.title" required />
+        <label for="lecture_title_input">Lecture Title:</label>
+        <input type="text" id="lecture_title_input" placeholder="Title of the event" v-model="eventData.title" />
       </div>
       <div class="event-page-lecture-type">
-        <input type="text" placeholder="Lecture type" v-model="eventData.lectureType" required />
+        <label for="lecture_type_input">Lecture Type:</label>
+        <div class="select-container">
+          <select id="lecture_type_input" v-model="eventData.lectureType">
+            <option disabled hidden value="">Choose Lecture Type</option>
+            <option value="lec">Lecture</option>
+            <option value="tut">Tutorial</option>
+            <option value="lab">Lab</option>
+          </select>
+        </div>
       </div>
       <div class="event-page-name">
-        <input type="text" placeholder="Professor name" v-model="eventData.professorName" required />
+        <label for="professor_name_input">Professor Name:</label>
+        <div class="select-container">
+          <select id="professor_name_input" v-model="eventData.professorName">
+            <option disabled hidden value="">Choose Professor</option>
+            <option v-for="lecturer in lecturers" :value="lecturer" :key="lecturer">{{ lecturer }}</option>
+          </select>
+        </div>
       </div>
       <div class="event-page-auditorium">
-        <input type="number" placeholder="Auditorium" v-model="eventData.auditorium" required />
+        <label for="auditorium_input">Auditorium:</label>
+        <input type="number" id="auditorium_input" placeholder="Auditorium" v-model="eventData.auditorium" />
       </div>
       <div class="event-page-date-time">
         <div class="event-page-date">
           <label for="date_input">Select Date:</label>
-          <input type="date" id="date_input" v-model="eventData.date" required />
+          <input type="date" id="date_input" v-model="eventData.date" />
         </div>
         <div class="event-page-space"></div>
         <div class="event-page-time">
           <label for="time_input">Select Time:</label>
-          <input type="time" id="time_input" v-model="eventData.time" required />
+          <input type="time" id="time_input" v-model="eventData.time" />
         </div>
       </div>
       <div class="event-page-year">
         <label for="year_input">Select Year:</label>
         <div class="select-container">
-          <select v-model="selectedYear" @change="fetchGroups" required>
+          <select v-model="selectedYear" @change="fetchGroups">
             <option disabled hidden value="">Choose year</option>
             <option v-for="year in years" :value="year.id" :key="year.id">{{ year.name }}</option>
           </select>
@@ -131,7 +166,7 @@ export default {
       <div class="event-page-subject">
         <label for="subject_input">Select Group:</label>
         <div class="select-container">
-          <select v-model="selectedGroup" required>
+          <select v-model="selectedGroup">
             <option disabled hidden value="">Choose group</option>
             <option v-for="group in groups" :value="group" :key="group">{{ group }}</option>
           </select>
@@ -150,7 +185,6 @@ export default {
     </form>
   </div>
 </template>
-
 <style scoped>
   @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700');
 

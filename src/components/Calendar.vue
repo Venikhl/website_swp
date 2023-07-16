@@ -32,6 +32,7 @@ export default {
       try {
         const response = await axios.get(apiUrl);
         const eventData = response.data;
+        print(console.log(eventData))
 
         const events = eventData.map(event => ({
           title: event.title,
