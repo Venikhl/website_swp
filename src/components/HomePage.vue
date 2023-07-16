@@ -28,7 +28,7 @@ export default {
 
 <template>
   <div class="course-container">
-    <p v-if="!selectedYear">Check if the schedule is updated (the notification will appear in the telegram): <a href="" class="gradient-button-1">Download file</a></p>
+    <!-- <p v-if="!selectedYear">Check if the schedule is updated (the notification will appear in the telegram): <a href="" class="gradient-button-1">Download file</a></p> -->
     <div class="choose-course-container" :style="{ marginTop: selectedYear ? '20px' : '0' }">
       <h1 v-if="!selectedYear" class="choose-course-title">Choose a course:</h1>
       <div v-for="year in years" :key="year" class="course-option" @click="showComponent(year)">
